@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1 class="mt-3">{{ room.name }}</h1>
+
+<div class="row g-3" id="chat-list">
+    {% for message in room.messages.all %}
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">{{ message.posted_by.email }}</h5>
+            <p class="card-text">{{ message.content }}</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="row g-2 mt-3 align-items-center">
+    <div class="col-md">
+        <div class="form-floating">
+            <input type="text" class="form-control" id="msg" placeholder="メッセージを入力">
+            <label for="msg">メッセージ</label>
+        </div>
+    </div>
+    <div class="col-md">
+        <button id="send" class="btn btn-dark">送信</button>
+    </div>
+</div>
+
+
+<template id="chat-template">
+    <div class="card mt-3">
+        <div class="card-body">
+            <h5 class="card-title"></h5>
+            <p class="card-text"></p>
+        </div>
+    </div>
+</template>
+{% endblock %}
+
+
+{% block script %}
+<script>
+    const url = 'ws://' + window.location.host + '/ws/{{room.id}}';
+    const ws = new WebSocket(url);
+
+    document.getElementById("send").onclick = function sendMessage() {
+        const sendData = {
+            message: document.getElementById('msg').value,
+        }
+        ws.send(JSON.stringify(sendData));
+    }
+
+    ws.onerror = e => {
+        console.log(e);
+    }
+
+    ws.onmessage = e => {
+        const receiveData = JSON.parse(e.data);
+
+        const template = document.getElementById('chat-template');
+        const clone = template.content.cloneNode(true);
+
+        clone.querySelector('.card-title').textContent = receiveData.user;
+        clone.querySelector('.card-text').textContent = receiveData.message;
+        document.getElementById('chat-list').appendChild(clone);
+    }
+</script>
+{% endblock %}

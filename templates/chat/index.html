@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="card mt-3">
+    <div class="card-body">
+        <h5 class="card-title">ルームを新しく作成する</h5>
+        <form method="post">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <button type="submit" class="btn btn-primary">作成</button>
+        </form>
+    </div>
+</div>
+
+<div class="card mt-3">
+    <div class="card-body">
+        <h5 class="card-title">ルーム一覧</h5>
+        <div class="list-group">
+            {% for room in objects %}
+            <a href="/room/{{ room.id }}" class="list-group-item list-group-item-action">{{ room.name }}</a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

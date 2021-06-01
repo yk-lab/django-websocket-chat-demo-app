@@ -1,0 +1,35 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            // 表示名
+            "name": "django container",
+            // 言語
+            "type": "python",
+            // デバッグ時の挙動。実行の他にもある
+            "request": "launch",
+            // 動作させるファイルへのパス
+            "program": "${workspaceFolder}/manage.py",
+            // "program": "${workspaceFolder}/.venv/bin/daphne",
+            // デバッグで使用するターミナルを選択。VSCode外のターミナルを起動することもできる
+            "console": "integratedTerminal",
+            // プログラム実行時の引数
+            // "args": [
+            //     "runserver_plus",
+            //     "0.0.0.0:8000"
+            // ],
+            "args": [
+                "runserver",
+                "0.0.0.0:8000"
+            ],
+            // "args": [
+            //     "config.asgi:application",
+            // ],
+            "python": "${workspaceFolder}/.venv/bin/python3",
+            "django": true,
+        }
+    ]
+}

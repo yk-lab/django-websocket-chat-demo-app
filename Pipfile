@@ -1,0 +1,27 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+django = "*"
+channels = "*"
+djangorestframework = "*"
+django-filter = "*"
+django-extensions = "*"
+werkzeug = "*"
+django-model-utils = "*"
+django-debug-toolbar = "*"
+daphne = "*"
+channels-redis = "*"
+django-crispy-forms = "*"
+crispy-bootstrap5 = "*"
+
+[dev-packages]
+autopep8 = "*"
+isort = "*"
+mypy = "*"
+flake8 = "*"
+
+[requires]
+python_version = "3.9"

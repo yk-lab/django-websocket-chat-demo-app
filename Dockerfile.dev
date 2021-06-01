@@ -1,0 +1,37 @@
+FROM python:3.9.5-slim
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+ENV PIPENV_VENV_IN_PROJECT true
+ENV ENTRYKIT_VERSION 0.4.0
+ENV DOCKERIZE_VERSION v0.6.1
+
+RUN apt-get update -qq && \
+    apt-get install -y --no-install-recommends \
+    build-essential \
+    ca-certificates \
+    git \
+    wget \
+    && apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN wget https://github.com/progrium/entrykit/releases/download/v${ENTRYKIT_VERSION}/entrykit_${ENTRYKIT_VERSION}_Linux_x86_64.tgz \
+    && tar -xvzf entrykit_${ENTRYKIT_VERSION}_Linux_x86_64.tgz \
+    && rm entrykit_${ENTRYKIT_VERSION}_Linux_x86_64.tgz \
+    && mv entrykit /bin/entrykit \
+    && chmod +x /bin/entrykit \
+    && entrykit --symlink
+
+RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+ && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+ && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+
+WORKDIR /app
+
+RUN pip install --upgrade pip && pip install pipenv
+
+COPY scripts/ /opt/bin/
+
+EXPOSE 8000
+
+ENTRYPOINT ["/opt/bin/docker-entrypoint.sh"]
