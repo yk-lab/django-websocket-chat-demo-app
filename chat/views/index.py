@@ -22,7 +22,7 @@ class IndexView(LoginRequiredMixin, CreateView):
         return context
 
     def get_success_url(self) -> str:
-        return reverse('chat:chat_room', kwargs={'pk': self.object.id})
+        return reverse('chat:room', kwargs={'pk': self.object.id})
 
     def form_valid(self, form):
         form.instance.posted_by = self.request.user

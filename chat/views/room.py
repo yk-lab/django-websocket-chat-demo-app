@@ -7,7 +7,7 @@ from ..models import Room
 class RoomView(LoginRequiredMixin, DetailView):
     queryset = Room.objects\
         .prefetch_related('messages')
-    template_name = 'chat/chat_room.html'
+    template_name = 'chat/room.html'
 
 
 room_view = RoomView.as_view()

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1 class="mt-3">{{ room.name }}</h1>
+<h1>{{ room.name }}</h1>
 
 <div class="row g-3" id="chat-list">
     {% for message in room.messages.all %}
@@ -43,11 +43,19 @@
     const url = 'ws://' + window.location.host + '/ws/{{room.id}}';
     const ws = new WebSocket(url);
 
+    document.getElementById('msg').onkeydown = (e) => {
+        if (((e.ctrlKey && !e.metaKey) || (!e.ctrlKey && e.metaKey)) && e.keyCode == 13) {
+            document.getElementById('send').click();
+            return false
+        };
+    }
+
     document.getElementById("send").onclick = function sendMessage() {
         const sendData = {
             message: document.getElementById('msg').value,
         }
         ws.send(JSON.stringify(sendData));
+        document.getElementById('msg').value = '';
     }
 
     ws.onerror = e => {
