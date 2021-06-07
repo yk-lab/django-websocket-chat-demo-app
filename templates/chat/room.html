@@ -1,28 +1,43 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h1>{{ room.name }}</h1>
-
-<div class="row g-3" id="chat-list">
-    {% for message in room.messages.all %}
-    <div class="card">
-        <div class="card-body">
-            <h5 class="card-title">{{ message.posted_by.email }}</h5>
-            <p class="card-text">{{ message.content }}</p>
+<div class="row">
+    <h1>{{ room.name }}</h1>
+    <div class="accordion" id="accordionExample">
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingOne">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+              メンバー
+            </button>
+          </h2>
+          <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+            <div class="accordion-body p-0 list-group list-group-flush" id="members">
+          </div>
         </div>
     </div>
-    {% endfor %}
-</div>
-
-<div class="row g-2 mt-3 align-items-center">
-    <div class="col-md">
-        <div class="form-floating">
-            <input type="text" class="form-control" id="msg" placeholder="メッセージを入力">
-            <label for="msg">メッセージ</label>
-        </div>
+        
     </div>
-    <div class="col-md">
-        <button id="send" class="btn btn-dark">送信</button>
+    <div class="row g-3" id="chat-list">
+        {% for message in room.messages.all %}
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">{{ message.posted_by.email }}</h5>
+                <p class="card-text">{{ message.content }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="row g-2 mt-3 align-items-center">
+        <div class="col-md">
+            <div class="form-floating">
+                <input type="text" class="form-control" id="msg" placeholder="メッセージを入力">
+                <label for="msg">メッセージ</label>
+            </div>
+        </div>
+        <div class="col-md">
+            <button id="send" class="btn btn-dark">送信</button>
+        </div>
     </div>
 </div>
 
@@ -35,11 +50,53 @@
         </div>
     </div>
 </template>
+
+<template id="room-member-template">
+    <div class="list-group-item d-flex align-items-center">
+        <span class="badge rounded-pill bg-primary is-online d-none">&nbsp;</span>
+        <span class="badge rounded-pill bg-secondary is-offline d-none">&nbsp;</span>
+        <p class="user-name mb-0 ms-1"></p>
+    </div>
+</template>
 {% endblock %}
 
 
 {% block script %}
 <script>
+    const api_url = 'http://localhost:55002/rooms/{{room.id}}/';
+    const rendering_room_info = () => {
+        fetch(api_url)
+            .then(response => response.json())
+            .then(response => {
+                const members = response.members;
+
+                const el_members = document.getElementById('members');
+                el_members.innerHTML = '';
+
+                members.map(member => {
+                    const template = document.getElementById('room-member-template');
+                    const clone = template.content.cloneNode(true);
+
+                    if (member.is_online) {
+                        console.log('online');
+                        clone.querySelector('.is-online').classList.remove('d-none');
+                    } else {
+                        console.log('offline');
+                        clone.querySelector('.is-offline').classList.remove('d-none');
+                    }
+
+                    clone.querySelector('.user-name').textContent = member.username;
+
+                    el_members.appendChild(clone);
+                });
+            })
+            .catch(e => {
+                console.error(e);
+                location.reload();
+            });
+    }
+
+
     const url = 'ws://' + window.location.host + '/ws/{{room.id}}';
     const ws = new WebSocket(url);
 
@@ -52,11 +109,22 @@
 
     document.getElementById("send").onclick = function sendMessage() {
         const sendData = {
+            type: 'chat',
             message: document.getElementById('msg').value,
         }
         ws.send(JSON.stringify(sendData));
         document.getElementById('msg').value = '';
     }
+
+    setInterval(function () {
+        ws.send(JSON.stringify({
+            type: 'heartbeat'
+        }));
+    }, 30000);
+
+    setInterval(function () {
+        rendering_room_info();
+    }, 60000);
 
     ws.onerror = e => {
         console.log(e);
@@ -64,12 +132,22 @@
 
     ws.onmessage = e => {
         const receiveData = JSON.parse(e.data);
+        console.log(receiveData);
 
         const template = document.getElementById('chat-template');
         const clone = template.content.cloneNode(true);
 
-        clone.querySelector('.card-title').textContent = receiveData.user;
-        clone.querySelector('.card-text').textContent = receiveData.message;
+        if (receiveData.type === 'join') {
+            clone.querySelector('.card-text').textContent = `${receiveData.user} さんが入室しました`;
+            rendering_room_info();
+        } else if (receiveData.type === 'leave') {
+            clone.querySelector('.card-text').textContent = `${receiveData.user} さんが退室しました`;
+            rendering_room_info();
+        } else {
+            clone.querySelector('.card-title').textContent = receiveData.user;
+            clone.querySelector('.card-text').textContent = receiveData.message;
+        }
+
         document.getElementById('chat-list').appendChild(clone);
     }
 </script>

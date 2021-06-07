@@ -16,6 +16,7 @@ daphne = "*"
 channels-redis = "*"
 django-crispy-forms = "*"
 crispy-bootstrap5 = "*"
+drf-nested-routers = "*"
 
 [dev-packages]
 autopep8 = "*"
